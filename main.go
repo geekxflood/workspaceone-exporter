@@ -1,29 +1,42 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
-
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"os"
 )
 
-type people struct {
-	Number int `json:"number"`
-}
-
 func main() {
-	text := `{"people": [{"craft": "ISS", "name": "Sergey Rizhikov"}, {"craft": "ISS", "name": "Andrey Borisenko"}, {"craft": "ISS", "name": "Shane Kimbrough"}, {"craft": "ISS", "name": "Oleg Novitskiy"}, {"craft": "ISS", "name": "Thomas Pesquet"}, {"craft": "ISS", "name": "Peggy Whitson"}], "message": "success", "number": 6}`
-	textBytes := []byte(text)
+	// Query WS1 service
 
-	people1 := people{}
-	err := json.Unmarshal(textBytes, &people1)
+	url := os.Getenv("WS1_URL") + "/mdm/devices/search?lgid=" + os.Getenv("LGID")
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(people1.Number)
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("aw-tenant-code", os.Getenv("WS1_TENANT_KEY"))
+	req.Header.Add("Authorization", os.Getenv("WS1_AUTH_KEY"))
 
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":2112", nil)
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Client Error")
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println("IO read Error")
+		return
+	}
+	fmt.Printf("%T\n", body)
+
+	//fmt.Println(string(body))
 }
