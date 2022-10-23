@@ -1,120 +1,24 @@
 package main
 
+// TODO: Do a function for all the API Call it's getting redungdant
+// TODO: DO a function that will iterate on the pages and append the devices to the responseObject.Devices
+// TODO: need to lookup what the ... does, from `Code`on discord "It's a destructuring operator, it's like the spread operator in JS"
+// TODO: READ THIS -> It's a variadic function https://gobyexample.com/variadic-functions
+
 import (
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-type devicesResponseObject struct {
-	Devices []struct {
-		EasIds struct {
-		} `json:"EasIds"`
-		TimeZone           string `json:"TimeZone"`
-		Udid               string `json:"Udid"`
-		SerialNumber       string `json:"SerialNumber"`
-		MacAddress         string `json:"MacAddress"`
-		Imei               string `json:"Imei"`
-		EasID              string `json:"EasId"`
-		AssetNumber        string `json:"AssetNumber"`
-		DeviceFriendlyName string `json:"DeviceFriendlyName"`
-		DeviceReportedName string `json:"DeviceReportedName"`
-		LocationGroupID    struct {
-			ID struct {
-				Value int `json:"Value"`
-			} `json:"Id"`
-			Name string `json:"Name"`
-			UUID string `json:"Uuid"`
-		} `json:"LocationGroupId"`
-		LocationGroupName string `json:"LocationGroupName"`
-		UserID            struct {
-			ID struct {
-				Value int `json:"Value"`
-			} `json:"Id"`
-			Name string `json:"Name"`
-			UUID string `json:"Uuid"`
-		} `json:"UserId"`
-		UserName             string `json:"UserName"`
-		DataProtectionStatus int    `json:"DataProtectionStatus"`
-		UserEmailAddress     string `json:"UserEmailAddress"`
-		Ownership            string `json:"Ownership"`
-		PlatformID           struct {
-			ID struct {
-				Value int `json:"Value"`
-			} `json:"Id"`
-			Name string `json:"Name"`
-		} `json:"PlatformId"`
-		Platform string `json:"Platform"`
-		ModelID  struct {
-			ID struct {
-				Value int `json:"Value"`
-			} `json:"Id"`
-			Name string `json:"Name"`
-		} `json:"ModelId"`
-		Model                            string `json:"Model"`
-		OperatingSystem                  string `json:"OperatingSystem"`
-		PhoneNumber                      string `json:"PhoneNumber"`
-		LastSeen                         string `json:"LastSeen"`
-		EnrollmentStatus                 string `json:"EnrollmentStatus"`
-		ComplianceStatus                 string `json:"ComplianceStatus"`
-		CompromisedStatus                bool   `json:"CompromisedStatus"`
-		LastEnrolledOn                   string `json:"LastEnrolledOn"`
-		LastComplianceCheckOn            string `json:"LastComplianceCheckOn"`
-		LastCompromisedCheckOn           string `json:"LastCompromisedCheckOn"`
-		IsSupervised                     bool   `json:"IsSupervised"`
-		VirtualMemory                    int    `json:"VirtualMemory"`
-		OEMInfo                          string `json:"OEMInfo"`
-		IsDeviceDNDEnabled               bool   `json:"IsDeviceDNDEnabled"`
-		IsDeviceLocatorEnabled           bool   `json:"IsDeviceLocatorEnabled"`
-		IsCloudBackupEnabled             bool   `json:"IsCloudBackupEnabled"`
-		IsActivationLockEnabled          bool   `json:"IsActivationLockEnabled"`
-		IsNetworkTethered                bool   `json:"IsNetworkTethered"`
-		BatteryLevel                     string `json:"BatteryLevel"`
-		IsRoaming                        bool   `json:"IsRoaming"`
-		SystemIntegrityProtectionEnabled bool   `json:"SystemIntegrityProtectionEnabled"`
-		ProcessorArchitecture            int    `json:"ProcessorArchitecture"`
-		TotalPhysicalMemory              int    `json:"TotalPhysicalMemory"`
-		AvailablePhysicalMemory          int    `json:"AvailablePhysicalMemory"`
-		OSBuildVersion                   string `json:"OSBuildVersion"`
-		DeviceCellularNetworkInfo        []struct {
-			CarrierName string `json:"CarrierName"`
-			CardID      string `json:"CardId"`
-			PhoneNumber string `json:"PhoneNumber"`
-			DeviceMCC   struct {
-				Simmcc     string `json:"SIMMCC"`
-				CurrentMCC string `json:"CurrentMCC"`
-			} `json:"DeviceMCC"`
-			IsRoaming bool `json:"IsRoaming"`
-		} `json:"DeviceCellularNetworkInfo"`
-		EnrollmentUserUUID string `json:"EnrollmentUserUuid"`
-		ManagedBy          int    `json:"ManagedBy"`
-		WifiSsid           string `json:"WifiSsid"`
-		ID                 struct {
-			Value int `json:"Value"`
-		} `json:"Id"`
-		UUID              string `json:"Uuid"`
-		ComplianceSummary struct {
-			DeviceCompliance []struct {
-				CompliantStatus     bool   `json:"CompliantStatus"`
-				PolicyName          string `json:"PolicyName"`
-				PolicyDetail        string `json:"PolicyDetail"`
-				LastComplianceCheck string `json:"LastComplianceCheck"`
-				NextComplianceCheck string `json:"NextComplianceCheck"`
-				ActionTaken         []struct {
-					ActionType int `json:"ActionType"`
-				} `json:"ActionTaken"`
-				ID struct {
-					Value int `json:"Value"`
-				} `json:"Id"`
-				UUID string `json:"Uuid"`
-			} `json:"DeviceCompliance"`
-		} `json:"ComplianceSummary,omitempty"`
-	} `json:"Devices"`
-	Page     int `json:"Page"`
-	PageSize int `json:"PageSize"`
-	Total    int `json:"Total"`
+func runHttpServer() {
+	http.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(":2112", nil)
+
 }
 
 func main() {
@@ -148,9 +52,51 @@ func main() {
 	}
 	// fmt.Printf("%T\n", body)
 
-	// convert the body to a devicesResponseObject
-	var responseObject devicesResponseObject
+	// convert the body to a DevicesResponseObject
+	var responseObject DevicesResponseObject
 	json.Unmarshal(body, &responseObject)
 	fmt.Println("Number of devices are:", responseObject.Total)
+	fmt.Println("Size of page is :", responseObject.PageSize)
+	fmt.Println("Number of devices in current page are:", len(responseObject.Devices))
+
+	url = os.Getenv("WS1_URL") + "/mdm/devices/search?lgid=" + os.Getenv("LGID") + "&page=1"
+	req, err = http.NewRequest(method, url, nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("aw-tenant-code", os.Getenv("WS1_TENANT_KEY"))
+	req.Header.Add("Authorization", os.Getenv("WS1_AUTH_KEY"))
+
+	res, err = client.Do(req)
+	if err != nil {
+		fmt.Println("Client Error")
+		return
+	}
+	defer res.Body.Close()
+
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println("IO read Error")
+		return
+	}
+
+	//fmt.Println(string(body))
+
+	var tmpBody DevicesResponseObject
+	json.Unmarshal(body, &tmpBody)
+
+	fmt.Println("Number of devices are:", tmpBody.Total)
+
+	// responseObject.Devices + body.Devices
+	responseObject.Devices = append(responseObject.Devices, tmpBody.Devices...)
+
+	fmt.Println("Number of devices after appending are:", len(responseObject.Devices))
+
+	// Loop through the devices and print the device name
+	// for _, device := range responseObject.Devices {
+	// 	fmt.Println(device.SerialNumber)
+	// }
 
 }
