@@ -1,4 +1,4 @@
-# workspaceone-exporter
+# WorkspaceOne Prometheus Exporter
 
 WorkspaceOne UEM Prometheus exporter
 
