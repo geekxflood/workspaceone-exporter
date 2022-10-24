@@ -1,5 +1,20 @@
 package main
 
+type TagsResponseObject struct {
+	Tags []struct {
+		TagName    string `json:"TagName"`
+		DateTagged string `json:"DateTagged"`
+		TagAvatar  string `json:"TagAvatar"`
+		ID         struct {
+			Value int `json:"Value"`
+		} `json:"Id"`
+		UUID string `json:"Uuid"`
+	} `json:"Tags"`
+	Page     int `json:"Page"`
+	PageSize int `json:"PageSize"`
+	Total    int `json:"Total"`
+}
+
 type DevicesResponseObject struct {
 	Devices  DeviceDesc `json:"Devices"`
 	Page     int        `json:"Page"`
