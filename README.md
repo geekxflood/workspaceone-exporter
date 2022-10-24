@@ -14,3 +14,10 @@ This exporter is used to export WorkspaceOne UEM metrics to Prometheus.
 go mod tidy
 go run .
 ```
+
+### Building it
+
+```bash
+go mod tidy
+go build .
+```
