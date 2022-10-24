@@ -1,102 +1,129 @@
 package main
 
-// TODO: Do a function for all the API Call it's getting redungdant
-// TODO: DO a function that will iterate on the pages and append the devices to the responseObject.Devices
-// TODO: need to lookup what the ... does, from `Code`on discord "It's a destructuring operator, it's like the spread operator in JS"
-// TODO: READ THIS -> It's a variadic function https://gobyexample.com/variadic-functions
-
 import (
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"strconv"
 )
 
-func runHttpServer() {
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":2112", nil)
+// TODO: Lookup for moving the types on another file (used to workd I don't know why)
+// TODO: Create generic library to host the ApiCaller function, I'll need it for other projects
+// TODO: need to lookup what the ... does, from `Code`on discord "It's a destructuring operator, it's like the spread operator in JS"
+// TODO: READ THIS -> It's a variadic function https://gobyexample.com/variadic-functions
 
+// function apiCaller will do a REST API Call
+// The function takes as argument the URL of the API, the method (GET, POST, PUT, DELETE),
+// the body of the request (if any) and the headers (if any)
+// The function return the response body, the status code and an error
+func ApiCaller(url string, method string, body io.Reader, headers map[string]string) ([]byte, int, error) {
+	// Create a new request
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Add the headers to the request
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
+
+	// Do the request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return respBody, resp.StatusCode, nil
 }
 
-func main() {
-	// Query WS1 service
-
+// function Ws1DeviceRetriver that takes no input, it will return a DevicesResponseObject
+// Of all devices in the WS1 tenant
+func Ws1DeviceRetriver() DevicesResponseObject {
 	url := os.Getenv("WS1_URL") + "/mdm/devices/search?lgid=" + os.Getenv("LGID")
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	header := map[string]string{
+		"accept":         "application/json",
+		"aw-tenant-code": os.Getenv("WS1_TENANT_KEY"),
+		"Authorization":  os.Getenv("WS1_AUTH_KEY"),
+		"Content-Type":   "application/json",
+	}
+
+	resBody, resStatus, err := ApiCaller(url, method, nil, header)
+	//fmt.Println(string(resBody))
+	//fmt.Println(resStatus)
+
+	if resStatus != 200 {
+		fmt.Println("Error: ", err)
+	}
 
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
-	req.Header.Add("accept", "application/json")
-	req.Header.Add("aw-tenant-code", os.Getenv("WS1_TENANT_KEY"))
-	req.Header.Add("Authorization", os.Getenv("WS1_AUTH_KEY"))
 
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Client Error")
-		return
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println("IO read Error")
-		return
-	}
-	// fmt.Printf("%T\n", body)
-
-	// convert the body to a DevicesResponseObject
+	// Create the response object
 	var responseObject DevicesResponseObject
-	json.Unmarshal(body, &responseObject)
-	fmt.Println("Number of devices are:", responseObject.Total)
-	fmt.Println("Size of page is :", responseObject.PageSize)
-	fmt.Println("Number of devices in current page are:", len(responseObject.Devices))
-
-	url = os.Getenv("WS1_URL") + "/mdm/devices/search?lgid=" + os.Getenv("LGID") + "&page=1"
-	req, err = http.NewRequest(method, url, nil)
+	// Unmarshal the response body into the responseObject
+	err = json.Unmarshal(resBody, &responseObject)
 	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	req.Header.Add("accept", "application/json")
-	req.Header.Add("aw-tenant-code", os.Getenv("WS1_TENANT_KEY"))
-	req.Header.Add("Authorization", os.Getenv("WS1_AUTH_KEY"))
-
-	res, err = client.Do(req)
-	if err != nil {
-		fmt.Println("Client Error")
-		return
-	}
-	defer res.Body.Close()
-
-	body, err = io.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println("IO read Error")
-		return
+		panic(err)
 	}
 
-	//fmt.Println(string(body))
+	// Check is the number of device is greater than the page size
+	// If it is, we need to iterate on the pages and add the devices to the responseObject.Devices
+	if responseObject.Total > responseObject.PageSize {
+		// Find the number of pages
+		var pages int = responseObject.Total / responseObject.PageSize
+		if responseObject.Total%responseObject.PageSize > 0 {
+			pages++
+		}
+		// redo the API call for each page
+		// Start at 1 because the first page @ 0 is already in the responseObject
+		for i := 1; i < pages; i++ {
+			url := os.Getenv("WS1_URL") + "/mdm/devices/search?lgid=" + os.Getenv("LGID") + "&page=" + strconv.Itoa(i)
+			resBody, resStatus, err = ApiCaller(url, method, nil, header)
+			//fmt.Println(string(resBody))
+			//fmt.Println(resStatus)
 
-	var tmpBody DevicesResponseObject
-	json.Unmarshal(body, &tmpBody)
+			if resStatus != 200 {
+				fmt.Println("Error: ", err)
+			}
 
-	fmt.Println("Number of devices are:", tmpBody.Total)
+			if err != nil {
+				fmt.Println(err)
+			}
 
-	// responseObject.Devices + body.Devices
-	responseObject.Devices = append(responseObject.Devices, tmpBody.Devices...)
+			// Create the response object
+			var responseObject2 DevicesResponseObject
+			// Unmarshal the response body into the responseObject
+			err = json.Unmarshal(resBody, &responseObject2)
+			if err != nil {
+				panic(err)
+			}
+			// Add the devices to the responseObject.Devices
+			responseObject.Devices = append(responseObject.Devices, responseObject2.Devices...)
+		}
+	}
 
-	fmt.Println("Number of devices after appending are:", len(responseObject.Devices))
+	return responseObject
+}
 
-	// Loop through the devices and print the device name
-	// for _, device := range responseObject.Devices {
-	// 	fmt.Println(device.SerialNumber)
-	// }
-
+func main() {
+	deviceList := Ws1DeviceRetriver()
+	// Print all the deviceFriendlyName
+	for _, device := range deviceList.Devices {
+		fmt.Println(device.DeviceFriendlyName)
+	}
+	// Print the size of the device list
+	fmt.Println(len(deviceList.Devices))
 }
