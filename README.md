@@ -6,18 +6,39 @@ WorkspaceOne UEM Prometheus exporter
 
 This exporter is used to export WorkspaceOne UEM value to OpenMetrics format.
 
+## Accessing the metrics
+
+- Default port: 9740
+- Endpoint: /metrics
+
+example: `http://localhost:9740/metrics`
+
+## Metrics
+
+| Metric | Description | Labels | Type |
+| ------ | ----------- | ------ | ---- |
+| `device_number` | Number of devices | `none` | Gauge |
+| `device_os` | Number of devices by OS | `os` | Gauge |
+| `device_os_version` | Number of devices by OS version | `os_version` | Gauge |
+| `device_model` | Number of devices by model | `model` | Gauge |
+
 ## Usage
+
+### Compile from source
+
+```bash
+go build .
+```
 
 ### Running it locally
 
 ```bash
-go mod tidy
 go run .
 ```
 
-### Building it
+### Run it as a Docker container
 
 ```bash
-go mod tidy
-go build .
+docker build -t w1-prometheus-exporter .
+docker run -d -p 9740:9740 w1-prometheus-exporter
 ```
