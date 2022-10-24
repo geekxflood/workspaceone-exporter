@@ -15,6 +15,15 @@ type TagsResponseObject struct {
 	Total    int `json:"Total"`
 }
 
+type TagDeviceListObject struct {
+	Device []struct {
+		DeviceID     int    `json:"DeviceId"`
+		FriendlyName string `json:"FriendlyName"`
+		DateTagged   string `json:"DateTagged"`
+		DeviceUUID   string `json:"DeviceUuid"`
+	} `json:"Device"`
+}
+
 type DevicesResponseObject struct {
 	Devices  DeviceDesc `json:"Devices"`
 	Page     int        `json:"Page"`

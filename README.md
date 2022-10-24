@@ -34,8 +34,14 @@ example: `http://localhost:9740/metrics`
 | `WS1_URL` | WorkspaceOne UEM base API URL endpoint, must finished by /API |
 | `WS1_LGID` | WorkspaceOne UEM highest Group ID |
 | `WS1_INTERVAL` | Interval between each WS1 check to it's enrolled devices in minutes |
+| `TAG_FILTER` | String to filter Tag by it |
 
 ## Usage
+
+## Filter by Tag
+
+You can filter the devices by tag by using the `TAG_FILTER` environment variable.
+It will enable the system to only keep the tags that contain the string you set.
 
 ### Compile from source
 

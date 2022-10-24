@@ -12,6 +12,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+// TODO: Set some flags so to be able to select if we want values per tags or not as it can consume tons of API calls
+// TODO: Introduce a throttling mechanism to avoid overloading the WS1 API
 // TODO: Create a subprocess for quering getting the devices inventory
 // TODO: Timeout the API call and produce a metric of this
 // TODO: need to lookup what the ... does, from `Code`on discord "It's a destructuring operator, it's like the spread operator in JS"
@@ -64,6 +66,14 @@ var (
 	deviceOnline = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "device_online",
 		Help: "The number of devices in the WS1 tenant that are online",
+	})
+)
+
+// tagSum is a gauge which represents the number of tags in the WS1 tenant
+var (
+	tagSum = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "tag_sum",
+		Help: "The number of tags in the WS1 tenant",
 	})
 )
 
@@ -137,8 +147,21 @@ func main() {
 	// Get the number of tags in the WS1 tenant
 
 	tagList := Ws1TagRetriver()
-	_ = tagList
 	// fmt.Println(tagList.Total)
+
+	// Set the value of the metric tagSum
+	tagSum.Set(float64(tagList.Total))
+
+	// Test if the env Variable TAG_FILTER
+	// is not empty, if not filter the tags.TagName
+	// that match the TAG_FILTER value
+	tagFilter := os.Getenv("TAG_FILTER")
+	_ = tagFilter
+
+	// Now we need to count the number of device per Tag
+	// count the number of device per tag
+	// For each tag, count the number of device
+	// that have this tag
 
 	// Set the http Handler for prometheus
 	http.Handle("/metrics", promhttp.Handler())
