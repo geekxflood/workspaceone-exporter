@@ -18,9 +18,9 @@ type DeviceDesc []struct {
 	AssetNumber                      string                  `json:"AssetNumber"`
 	DeviceFriendlyName               string                  `json:"DeviceFriendlyName"`
 	DeviceReportedName               string                  `json:"DeviceReportedName"`
-	LocationGroupID                  LocationIdObject        `json:"LocationGroupId"`
+	LocationGroupID                  IdNameUUIDObject        `json:"LocationGroupId"`
 	LocationGroupName                string                  `json:"LocationGroupName"`
-	UserID                           UserIdOject             `json:"UserId"`
+	UserID                           IdNameUUIDObject        `json:"UserId"`
 	UserName                         string                  `json:"UserName"`
 	DataProtectionStatus             int                     `json:"DataProtectionStatus"`
 	UserEmailAddress                 string                  `json:"UserEmailAddress"`
@@ -57,45 +57,39 @@ type DeviceDesc []struct {
 	EnrollmentUserUUID               string                  `json:"EnrollmentUserUuid"`
 	ManagedBy                        int                     `json:"ManagedBy"`
 	WifiSsid                         string                  `json:"WifiSsid"`
-	ID                               struct {
-		Value int `json:"Value"`
-	} `json:"Id"`
-	UUID              string            `json:"Uuid"`
-	ComplianceSummary ComplianceObeject `json:"ComplianceSummary,omitempty"`
+	ID                               IdObject                `json:"Id"`
+	UUID                             string                  `json:"Uuid"`
+	ComplianceSummary                ComplianceObeject       `json:"ComplianceSummary,omitempty"`
 }
 
-type LocationIdObject struct {
-	ID struct {
-		Value int `json:"Value"`
-	} `json:"Id"`
-	Name string `json:"Name"`
-	UUID string `json:"Uuid"`
-}
-
-type UserIdOject struct {
-	ID struct {
-		Value int `json:"Value"`
-	} `json:"Id"`
-	Name string `json:"Name"`
-	UUID string `json:"Uuid"`
+type IdNameUUIDObject struct {
+	ID   IdObject `json:"Id"`
+	Name string   `json:"Name"`
+	UUID string   `json:"Uuid"`
 }
 
 type ValueIdObject struct {
+	ID   IdObject `json:"Id"`
+	Name string   `json:"Name"`
+}
+
+type IdObject struct {
 	ID struct {
 		Value int `json:"Value"`
 	} `json:"Id"`
-	Name string `json:"Name"`
 }
 
 type DeivceCelllularObject struct {
-	CarrierName string `json:"CarrierName"`
-	CardID      string `json:"CardId"`
-	PhoneNumber string `json:"PhoneNumber"`
-	DeviceMCC   struct {
-		Simmcc     string `json:"SIMMCC"`
-		CurrentMCC string `json:"CurrentMCC"`
-	} `json:"DeviceMCC"`
-	IsRoaming bool `json:"IsRoaming"`
+	CarrierName string          `json:"CarrierName"`
+	CardID      string          `json:"CardId"`
+	PhoneNumber string          `json:"PhoneNumber"`
+	DeviceMCC   DeviceMCCObject `json:"DeviceMCC"`
+	IsRoaming   bool            `json:"IsRoaming"`
+}
+
+type DeviceMCCObject struct {
+	Simmcc     string `json:"SIMMCC"`
+	CurrentMCC string `json:"CurrentMCC"`
 }
 
 type ComplianceObeject struct {
@@ -108,9 +102,7 @@ type ComplianceObeject struct {
 		ActionTaken         []struct {
 			ActionType int `json:"ActionType"`
 		} `json:"ActionTaken"`
-		ID struct {
-			Value int `json:"Value"`
-		} `json:"Id"`
-		UUID string `json:"Uuid"`
+		ID   IdObject `json:"Id"`
+		UUID string   `json:"Uuid"`
 	} `json:"DeviceCompliance"`
 }
