@@ -4,7 +4,7 @@ WorkspaceOne UEM Prometheus exporter
 
 ## Description
 
-This exporter is used to export WorkspaceOne UEM value to OpenMetrics format.
+This exporter is used to export WorkspaceOne UEM value to [OpenMetrics](https://openmetrics.io/) format.
 
 ## Accessing the metrics
 

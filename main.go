@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -104,45 +103,45 @@ func main() {
 
 	// Get the interval from the environement variable convert the string in int
 	ws1Intervalraw := os.Getenv("WS1_INTERVAL")
-	fmt.Printf("Type of ws1Intervalraw: %T\n", ws1Intervalraw)
-	fmt.Printf("Value of ws1Intervalraw: %q\n", ws1Intervalraw)
-	ws1Interval, err := strconv.Atoi(ws1Intervalraw)
-	if err != nil {
+	// fmt.Printf("Type of ws1Intervalraw: %T\n", ws1Intervalraw)
+	// fmt.Printf("Value of ws1Intervalraw: %q\n", ws1Intervalraw)
+	if ws1Interval, err := strconv.Atoi(ws1Intervalraw); err != nil {
 		panic("Error converting WS1_INTERVAL to int")
-	}
-	fmt.Printf("Type of ws1Interval: %T\n", ws1Interval)
+	} else {
+		// fmt.Printf("Type of ws1Interval: %T\n", ws1Interval)
+		// Convert ws1Interval value in minutes time.duration
+		ws1IntervalDuration := time.Duration(ws1Interval) * time.Minute
 
-	// Convert ws1Interval value in minutes time.duration
-	ws1IntervalDuration := time.Duration(ws1Interval) * time.Minute
-	// fmt.Printf("Type of ws1IntervalDuration: %T\n", ws1IntervalDuration)
-	// Print the value of ws1IntervalDuration
-	// fmt.Printf("Value of ws1IntervalDuration: %q\n", ws1IntervalDuration)
+		// fmt.Printf("Type of ws1IntervalDuration: %T\n", ws1IntervalDuration)
+		// Print the value of ws1IntervalDuration
+		// fmt.Printf("Value of ws1IntervalDuration: %q\n", ws1IntervalDuration)
 
-	// For each device, evaluate the lastSeen value
-	// If the lastSeen value - current time is greater than the interval
-	// then the device is offline
-	offline := 0
-	online := 0
-	for _, device := range deviceList.Devices {
-		// convert the lastSeen value in time
-		lastSeen, err := time.Parse("2006-01-02T15:04:05", device.LastSeen)
-		if err != nil {
-			panic(err)
-		}
+		// For each device, evaluate the lastSeen value
 		// If the lastSeen value - current time is greater than the interval
 		// then the device is offline
-		if time.Since(lastSeen) > ws1IntervalDuration {
-			offline++
-		} else {
-			online++
+		offline := 0
+		online := 0
+		for _, device := range deviceList.Devices {
+			// convert the lastSeen value in time
+			if lastSeen, err := time.Parse("2006-01-02T15:04:05", device.LastSeen); err != nil {
+				panic("Error converting lastSeen to time")
+			} else {
+				// If the lastSeen value - current time is greater than the interval
+				// then the device is offline
+				if time.Since(lastSeen) > ws1IntervalDuration {
+					offline++
+				} else {
+					online++
+				}
+			}
 		}
+
+		// Set the value of the metric deviceOffline
+		deviceOffline.Set(float64(offline))
+
+		// Set the value of the metric deviceOnline
+		deviceOnline.Set(float64(online))
 	}
-
-	// Set the value of the metric deviceOffline
-	deviceOffline.Set(float64(offline))
-
-	// Set the value of the metric deviceOnline
-	deviceOnline.Set(float64(online))
 
 	// Get the number of tags in the WS1 tenant
 
