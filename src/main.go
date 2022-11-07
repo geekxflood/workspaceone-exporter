@@ -15,8 +15,6 @@ import (
 // TODO: Introduce a throttling mechanism to avoid overloading the WS1 API
 // TODO: Create a subprocess for quering getting the devices inventory
 // TODO: Timeout the API call and produce a metric of this
-// TODO: need to lookup what the ... does, from `Code`on discord "It's a destructuring operator, it's like the spread operator in JS"
-// TODO: READ THIS -> It's a variadic function https://gobyexample.com/variadic-functions
 
 func recordMetrics() {
 	go func() {
