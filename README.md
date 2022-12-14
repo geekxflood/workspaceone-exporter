@@ -36,6 +36,14 @@ example: `http://localhost:9740/metrics`
 | `WS1_INTERVAL` | Interval between each WS1 check to it's enrolled devices in minutes |
 | `TAG_FILTER` | String to filter Tag by it |
 
+## FlowChart
+
+```mermaid
+graph RL
+    A[Prometheus ] --> B[WorkspaceOne Exporter]
+    B --> C[WorkspaceOne UEM]
+```
+
 ## Usage
 
 ## Filter by Tag
