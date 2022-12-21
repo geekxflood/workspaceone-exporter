@@ -21,7 +21,7 @@ envVars:
     value: myTagFilter
 
 image:
-  repository: nginx
+  repository: ghcr.io/christopherime/workspaceone-exporter
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -54,7 +54,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 9740
 
 ingress:
   enabled: false
