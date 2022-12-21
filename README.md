@@ -2,6 +2,11 @@
 
 WorkspaceOne UEM Prometheus exporter
 
+## TODO
+
+- [ ] Create a grafana.json file to import the dashboard (currently empty)
+- [ ] Add more metrics
+
 ## Description
 
 This exporter is used to export WorkspaceOne UEM value to [OpenMetrics](https://openmetrics.io/) format.
