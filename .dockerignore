@@ -1,0 +1,7 @@
+.env
+doc/
+dashboard/
+charts/
+*.md
+.github/
+.gitignore

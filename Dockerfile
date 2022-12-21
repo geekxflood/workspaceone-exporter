@@ -11,10 +11,10 @@ ENV CGO_ENABLED=0
 
 # Build dependencies
 WORKDIR /go/src/
-COPY . .
+COPY src/* .
 RUN apk update && apk add make git
 RUN mkdir /go/src/build
-RUN go build -o build/workspaceone-exporter
+RUN go build -o builfd/workspaceone-exporter
 
 # Second stage
 FROM alpine:latest
