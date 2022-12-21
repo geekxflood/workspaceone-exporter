@@ -20,6 +20,6 @@ RUN go build -o build/workspaceone-exporter
 FROM alpine:latest
 
 COPY --from=builder /go/src/build/workspaceone-exporter /usr/local/bin/workspaceone-exporter
-MKDIR /var/log/workspaceone-exporter
+RUN mkdir /var/log/workspaceone-exporter
 RUN chmod +677 /var/log/workspaceone-exporter
 CMD ["/usr/local/bin/workspaceone-exporter"]
