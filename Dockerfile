@@ -1,17 +1,25 @@
-# syntax=docker/dockerfile:1
+FROM golang:1.19-alpine AS builder
 
-FROM golang:1.19-alpine AS build
+ARG ARCH=amd64
 
-WORKDIR /app
+ENV GOROOT /usr/local/go
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:$GOROOT/bin:$PATH
+ENV GO_VERSION 1.19
+ENV GO111MODULE on
+ENV CGO_ENABLED=0
 
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
+# Build dependencies
+WORKDIR /go/src/
+COPY . .
+RUN apk update && apk add make git
+RUN mkdir /go/src/build
+RUN go build -o build/workspaceone-exporter
 
-COPY *.go ./
+# Second stage
+FROM alpine:latest
 
-RUN go build -o /workspaceone-exporter
-
-EXPOSE 9740
-
-CMD [ "/workspaceone-exporter" ]
+COPY --from=builder /go/src/build/workspaceone-exporter /usr/local/bin/workspaceone-exporter
+MKDIR /var/log/workspaceone-exporter
+RUN chmod +677 /var/log/workspaceone-exporter
+CMD ["/usr/local/bin/workspaceone-exporter"]
