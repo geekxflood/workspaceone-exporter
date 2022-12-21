@@ -4,6 +4,22 @@
 
 replicaCount: 1
 
+envVars:
+  - name: WS1_AUTH_KEY
+    value: myAuthKey
+  - name: WS1_TENANT_KEY
+    value: myTenantKey
+  - name: WS1_URL
+    value: myUrl
+  - name: WS1_TENANT_NAME
+    value: myTenantName
+  - name: WS1_LGID
+    value: myLgid
+  - name: WS1_INTERVAL
+    value: myInterval
+  - name: TAG_FILTER
+    value: myTagFilter
+
 image:
   repository: nginx
   pullPolicy: IfNotPresent
