@@ -11,83 +11,46 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// TODO: Add some logs output
+// TODO: Validate the init() behaviour, not certain that it will does what I want
+// TODO: Use a local DB like badger (maybe something better idk) to temporary store the data
 // TODO: Set some flags so to be able to select if we want values per tags or not as it can consume tons of API calls
 // TODO: Introduce a throttling mechanism to avoid overloading the WS1 API
 // TODO: Create a subprocess for quering getting the devices inventory
 // TODO: Timeout the API call and produce a metric of this
 
+func init() {
+	// Set the log output to stdout
+	log.SetOutput(os.Stdout)
+	// Set the log prefix
+	log.SetPrefix("ws1_exporter: ")
+	// Set the log flag
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
+	// Get the interval from the environement variable convert the string in int
+	ws1Intervalraw = os.Getenv("WS1_INTERVAL")
+	// fmt.Printf("Type of ws1Intervalraw: %T\n", ws1Intervalraw)
+	// fmt.Printf("Value of ws1Intervalraw: %q\n", ws1Intervalraw)
+
+	ws1TagParsingRaw = os.Getenv("TAG_PARSING")
+	// fmt.Printf("Type of ws1TagParsingRaw: %T\n", ws1TagParsingRaw)
+	// fmt.Printf("Value of ws1TagParsingRaw: %q\n", ws1TagParsingRaw)
+}
+
 func main() {
 
 	recordMetrics()
 
-	// Call the function to get the devices Inventory
-	deviceList := Ws1DeviceRetriver()
-	deviceNumber.Set(float64(deviceList.Total))
+	deviceList := GetVolumeDevices()
 
-	// Listt all the diffrent Platform in the inventory
-	platforms := make(map[string]int)
-	for _, device := range deviceList.Devices {
-		platforms[device.Platform]++
-	}
-	// For each diffrent platform found, set the value in the metric
-	for platform, count := range platforms {
-		devicePlatform.WithLabelValues(platform).Set(float64(count))
-	}
-
-	// Find the number of device offline
-	// The interval is by en evironement variable in minutes
-	// This interval is configure in WS1 admin panel and define the time
-	// between each check from Ws1 to the device
-	// Then we need to find the number of device with a lastSeen
-	// older than the interval
-
-	// Get the interval from the environement variable convert the string in int
-	ws1Intervalraw := os.Getenv("WS1_INTERVAL")
-	// fmt.Printf("Type of ws1Intervalraw: %T\n", ws1Intervalraw)
-	// fmt.Printf("Value of ws1Intervalraw: %q\n", ws1Intervalraw)
+	// List all the diffrent Platform in the inventory
+	GetDevicePlatforms(deviceList)
 
 	if ws1Interval, err := strconv.Atoi(ws1Intervalraw); err != nil {
 		log.Panic("Error converting WS1_INTERVAL to int")
 	} else {
-		// fmt.Printf("Type of ws1Interval: %T\n", ws1Interval)
-		// Convert ws1Interval value in minutes time.duration
-		ws1IntervalDuration := time.Duration(ws1Interval) * time.Minute
 
-		// fmt.Printf("Type of ws1IntervalDuration: %T\n", ws1IntervalDuration)
-		// Print the value of ws1IntervalDuration
-		// fmt.Printf("Value of ws1IntervalDuration: %q\n", ws1IntervalDuration)
-
-		// For each device, evaluate the lastSeen value
-		// If the lastSeen value - current time is greater than the interval
-		// then the device is offline
-		offline := 0
-		online := 0
-		for _, device := range deviceList.Devices {
-			// convert the lastSeen value in time
-			if lastSeen, err := time.Parse("2006-01-02T15:04:05", device.LastSeen); err != nil {
-				log.Panic("Error converting lastSeen to time")
-			} else {
-				// If the lastSeen value - current time is greater than the interval
-				// then the device is offline
-				if time.Since(lastSeen) > ws1IntervalDuration {
-					offline++
-				} else {
-					online++
-				}
-			}
-		}
-
-		// Set the value of the metric deviceOffline
-		deviceOffline.Set(float64(offline))
-
-		// Set the value of the metric deviceOnline
-		deviceOnline.Set(float64(online))
+		GetVolumeStatusDevice(deviceList, ws1Interval)
 	}
-
-	ws1TagParsingRaw := os.Getenv("TAG_PARSING")
-	// fmt.Printf("Type of ws1TagParsingRaw: %T\n", ws1TagParsingRaw)
-	// fmt.Printf("Value of ws1TagParsingRaw: %q\n", ws1TagParsingRaw)
 
 	if ws1TagParsing, err := strconv.ParseBool(ws1TagParsingRaw); err != nil {
 		log.Panic("Error converting WS1_TAG_PARSING to bool")
