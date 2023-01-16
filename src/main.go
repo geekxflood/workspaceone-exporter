@@ -33,7 +33,9 @@ func init() {
 
 	ws1TagParsingRaw = os.Getenv("TAG_PARSING")
 	// fmt.Printf("Type of ws1TagParsingRaw: %T\n", ws1TagParsingRaw)
-	// fmt.Printf("Value of ws1TagParsingRaw: %q\n", ws1TagParsingRaw)
+	// fmt.Printf("Value of ws1TagParsingRaw: %q\n", ws1TagParsingRaw)$
+
+	tagFilter = os.Getenv("TAG_FILTER")
 }
 
 func main() {
@@ -68,7 +70,7 @@ func main() {
 			// Test if the env Variable TAG_FILTER
 			// is not empty, if not filter the tags.TagName
 			// that match the TAG_FILTER value
-			tagFilter := os.Getenv("TAG_FILTER")
+
 			re := regexp.MustCompile(tagFilter)
 
 			// Now we need to count the number of device per Tag

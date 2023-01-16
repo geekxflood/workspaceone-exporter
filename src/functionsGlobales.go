@@ -1,5 +1,7 @@
 package main
 
+// Library of all the generic functions
+
 import (
 	"io"
 	"net/http"

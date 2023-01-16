@@ -1,5 +1,7 @@
 package main
 
+// Contains all functions specific to communicate with WorkspaceOne UEM API
+
 import (
 	"encoding/json"
 	"log"

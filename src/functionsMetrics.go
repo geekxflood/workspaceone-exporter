@@ -1,5 +1,7 @@
 package main
 
+// Libraries of all functions that will do any changes on the prometheus metrics
+
 import (
 	"log"
 	"time"

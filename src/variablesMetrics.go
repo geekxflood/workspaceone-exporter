@@ -1,5 +1,7 @@
 package main
 
+// Contains all the variables that will be used to create the metrics
+
 import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
