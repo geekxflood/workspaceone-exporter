@@ -11,8 +11,11 @@ ENV CGO_ENABLED=0
 
 # Build dependencies
 WORKDIR /go/src/
-COPY . .
+COPY ./src/* .
+COPY go.mod .
+COPY go.sum .
 RUN apk update && apk add make git
+RUN go get ./...
 RUN mkdir /go/src/build
 RUN go build -o build/workspaceone-exporter
 
