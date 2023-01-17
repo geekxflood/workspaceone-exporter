@@ -64,8 +64,7 @@ func main() {
 			tagList := Ws1TagRetriver()
 			// fmt.Println(tagList.Total)
 
-			// Set the value of the metric tagSum
-			tagSum.Set(float64(tagList.Total))
+			GetTagSum(tagList)
 
 			// Test if the env Variable TAG_FILTER
 			// is not empty, if not filter the tags.TagName

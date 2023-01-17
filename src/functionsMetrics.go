@@ -26,6 +26,11 @@ func GetDevicePlatforms(deviceList DevicesResponseObject) {
 	}
 }
 
+func GetTagSum(tagList TagsResponseObject) {
+	// Set the value of the metric tagSum
+	tagSum.Set(float64(tagList.Total))
+}
+
 func GetVolumeStatusDevice(deviceList DevicesResponseObject, ws1Interval int) {
 	// Find the number of device offline
 	// The interval is by en evironement variable in minutes

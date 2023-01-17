@@ -11,13 +11,11 @@ ENV CGO_ENABLED=0
 
 # Build dependencies
 WORKDIR /go/src/
-COPY ./src/* .
-COPY go.mod .
-COPY go.sum .
+COPY . .
 RUN apk update && apk add make git
 RUN go get ./...
-RUN mkdir /go/src/build
-RUN go build -o build/workspaceone-exporter
+RUN mkdir /go/src/build 
+RUN go build -a -gcflags=all="-l -B" -ldflags="-w -s" -o build/workspaceone-exporter ./...
 
 # Second stage
 FROM alpine:latest
