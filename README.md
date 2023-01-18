@@ -2,11 +2,6 @@
 
 WorkspaceOne UEM Prometheus exporter
 
-## TODO
-
-- [ ] Create a grafana.json file to import the dashboard (currently empty)
-- [ ] Add more metrics
-
 ## Description
 
 This exporter is used to export WorkspaceOne UEM value to [OpenMetrics](https://openmetrics.io/) format.
@@ -22,24 +17,27 @@ example: `http://localhost:9740/metrics`
 
 | Metric | Description | Labels | Type | Implemented |
 | ------ | ----------- | ------ | ---- | ----------- |
-| `device_number` | Number of devices | `none` | Gauge | yes |
-| `device_os` | Number of devices by OS | `os` | Gauge | yes |
-| `device_offline` | Number of offline devices | `none` | Gauge | yes |
-| `device_online` | Number of online devices | `none` | Gauge | yes |
-| `device_per_tag`| Number of devices by tag | `tag` | Gauge | no |
-| `device_offline_per_tag`| Number of devices by tag | `tag` | Gauge | no |
-| `device_online_per_tag`| Number of devices by tag | `tag` | Gauge | no |
+| `devices_number` | The number of devices in the WS1 tenant | `none` | Gauge | ✅ |
+| `devices_os` | The number of devices per OS in the WS1 tenant | `os` | Gauge | ✅ |
+| `devices_offline` | The number of devices in the WS1 tenant that are offline | `none` | Gauge | ✅ |
+| `devices_online` | The number of devices in the WS1 tenant that are online| `none` | Gauge | ✅ |
+| `tags_sum`| The number of tags in the WS1 tenant | `none` | Gauge | ✅ |
+| `devices_online_tag`| The number of devices online per tag in the WS1 tenant| `tag`, `model` | Gauge | ✅ |
+| `devices_offline_tag`| The number of devices offline per tag in the WS1 tenant | `tag`, `model` | Gauge | ✅ |
+| `devices_offline_1m_tag` | The number of devices offline per tag in the WS1 tenant for more than the last month | `tag`, `model` | Gauge | ✅ |
 
 ## Environment variables
 
-| Variable | Description |
-| -------- | ----------- |
-| `WS1_AUTH_KEY` | WorkspaceOne UEM user Auth Key |
-| `WS1_TENANT_KEY` | WorkspaceOne UEM tenant key |
-| `WS1_URL` | WorkspaceOne UEM base API URL endpoint, must finished by /API |
-| `WS1_LGID` | WorkspaceOne UEM highest Group ID |
-| `WS1_INTERVAL` | Interval between each WS1 check to it's enrolled devices in minutes |
-| `TAG_FILTER` | String to filter Tag by it |
+| Variable | Description | Type | Comment |
+| -------- | ----------- | ---- | ------- |
+| `WS1_AUTH_KEY` | WorkspaceOne UEM user Auth Key | `string`| |
+| `WS1_TENANT_KEY` | WorkspaceOne UEM tenant key | `string`| |
+| `WS1_URL` | WorkspaceOne UEM base API URL endpoint, must finished by /API | `string`| |
+| `WS1_LGID` | WorkspaceOne UEM highest Group ID | `string`| |
+| `WS1_INTERVAL` | Interval between each WS1 check to it's enrolled devices in minutes | `string`| |
+| `TAG_PARSING` | Enable or disable the tag parsing | `string`| must be true of false |
+| `TAG_FILTER` | String to filter Tag by it | `string`| Will apply a regex filter using this string over all tags |
+| `INSECURE` | Enable or disable the TLS verification | `string`| must be true of false |
 
 ## FlowChart
 

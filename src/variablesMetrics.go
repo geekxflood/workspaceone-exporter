@@ -10,7 +10,7 @@ import (
 // deviceNumber is a gauge which represents the number of devices in the WS1 tenant
 var (
 	deviceNumber = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "device_number",
+		Name: "devices_number",
 		Help: "The number of devices in the WS1 tenant",
 	})
 )
@@ -18,7 +18,7 @@ var (
 // devicePlatform is a gauge which represents the number of devices per OS in the WS1 tenant
 var (
 	devicePlatform = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "device_os",
+		Name: "devices_os",
 		Help: "The number of devices per OS in the WS1 tenant",
 	}, []string{"platform"})
 )
@@ -26,7 +26,7 @@ var (
 // deviceOffline is a gauge which represents the number of devices in the WS1 tenant that are offline
 var (
 	deviceOffline = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "device_offline",
+		Name: "devices_offline",
 		Help: "The number of devices in the WS1 tenant that are offline",
 	})
 )
@@ -34,7 +34,7 @@ var (
 // deviceOnline is a gauge which represents the number of devices in the WS1 tenant that are online
 var (
 	deviceOnline = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "device_online",
+		Name: "devices_online",
 		Help: "The number of devices in the WS1 tenant that are online",
 	})
 )
@@ -42,23 +42,31 @@ var (
 // tagSum is a gauge which represents the number of tags in the WS1 tenant
 var (
 	tagSum = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "tag_sum",
+		Name: "tags_sum",
 		Help: "The number of tags in the WS1 tenant",
 	})
 )
 
-// tagDeviceSum is a gauge which represents the number of devices per tag in the WS1 tenant
+// tagDeviceOnline is a gauge wich represent the number of device online per tag in the WS1 tenant
 var (
-	tagDeviceSum = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "tag_device_sum",
-		Help: "The number of devices per tag in the WS1 tenant",
-	}, []string{"tag"})
+	tagDeviceOnline = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "devices_online_tag",
+		Help: "The number of devices online per tag in the WS1 tenant",
+	}, []string{"tag", "model"})
 )
 
 // tagDeviceOffline is a gauge wich represent the number of device offline per tag in the WS1 tenant
 var (
 	tagDeviceOffline = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "tag_device_offline",
-		Help: "The number of device offline per tag in the WS1 tenant",
-	}, []string{"tag"})
+		Name: "devices_offline_tag",
+		Help: "The number of devices offline per tag in the WS1 tenant",
+	}, []string{"tag", "model"})
+)
+
+// tagDeviceOffline1M is a gauge wich represent the number of device offline per tag in the WS1 tenant for more than the last month
+var (
+	tagDeviceOffline1M = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "devices_offline_1m_tag",
+		Help: "The number of devices offline per tag in the WS1 tenant for more than the last month",
+	}, []string{"tag", "model"})
 )

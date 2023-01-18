@@ -39,12 +39,8 @@ func init() {
 
 	// Get the interval from the environement variable convert the string in int
 	ws1Intervalraw = os.Getenv("WS1_INTERVAL")
-	// fmt.Printf("Type of ws1Intervalraw: %T\n", ws1Intervalraw)
-	// fmt.Printf("Value of ws1Intervalraw: %q\n", ws1Intervalraw)
 
 	ws1TagParsingRaw = os.Getenv("TAG_PARSING")
-	//log.Printf("Type of ws1TagParsingRaw: %T\n", ws1TagParsingRaw)
-	//log.Printf("Value of ws1TagParsingRaw: %q\n", ws1TagParsingRaw)$
 
 	tagFilter = os.Getenv("TAG_FILTER")
 }
@@ -104,14 +100,6 @@ func main() {
 					tagDeviceList := Ws1TagDeviceRetriver(tag.ID.Value)
 
 					// For each tag found,
-					// Set a gauge metric with the tag name and the number of device
-					// Do not set if the value is 0
-					if len(tagDeviceList.Device) > 0 {
-						tagDeviceSum.WithLabelValues(tag.TagName).Set(float64(len(tagDeviceList.Device)))
-
-					}
-
-					// For each tag found,
 					// Set a gauge metric with the tag name and the number of devices offlline
 
 					for _, tagDevice := range tagDeviceList.Device {
@@ -128,13 +116,19 @@ func main() {
 									// then the device is offline
 									// Get the interval from the environement variable convert the string in int
 									ws1Intervalraw := os.Getenv("WS1_INTERVAL")
-									// fmt.Printf("Type of ws1Intervalraw: %T\n", ws1Intervalraw)
-									// fmt.Printf("Value of ws1Intervalraw: %q\n", ws1Intervalraw)
 									if ws1Interval, err := strconv.Atoi(ws1Intervalraw); err != nil {
 										log.Println("Error converting WS1_INTERVAL to int")
 									} else {
-										if time.Since(lastSeen) > time.Duration(ws1Interval)*time.Minute {
-											tagDeviceOffline.WithLabelValues(tag.TagName).Inc()
+										// The device is online as it's lastSeen value is less or equal than the interval
+										if time.Since(lastSeen) <= time.Duration(ws1Interval)*time.Minute {
+											tagDeviceOnline.WithLabelValues(tag.TagName, d.Model).Inc()
+											// The device is offline as it's lastSeen value is greater than the interval
+										} else if time.Since(lastSeen) > time.Duration(ws1Interval)*time.Minute && time.Since(lastSeen) <= time.Duration(30*24*60)*time.Minute {
+											tagDeviceOffline.WithLabelValues(tag.TagName, d.Model).Inc()
+
+											// Test if the time.Since(lastSeen) is greater than 1 month and if so increment the tagDeviceOffline1M metric
+										} else if time.Since(lastSeen) > time.Duration(30*24*60)*time.Minute {
+											tagDeviceOffline1M.WithLabelValues(tag.TagName, d.Model).Inc()
 										}
 									}
 
