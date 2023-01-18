@@ -1,15 +1,19 @@
 version: '3.8'
 services:
   workspaceone-exporter:
-    image: workspaceone-exporter:latest
+    build:
+      tags:
+        - workspaceone-exporter:latest
+      context: .
     container_name: workspaceone-exporter
     environment:
       - WS1_AUTH_KEY=${WS1_AUTH_KEY}
       - WS1_TENANT_KEY=${WS1_TENANT_KEY}
       - WS1_URL=${WS1_URL}
-      - WS1_TENANT_NAME=${WS1_TENANT_NAME}
       - WS1_LGID=${WS1_LGID}
       - WS1_INTERVAL=${WS1_INTERVAL}
       - TAG_FILTER=${TAG_FILTER}
+      - TAG_PARSING=${TAG_PARSING}
+      - INSECURE=${INSECURE}
     ports:
       - 9740:9740

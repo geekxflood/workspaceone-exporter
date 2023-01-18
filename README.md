@@ -56,16 +56,11 @@ graph RL
 You can filter the devices by tag by using the `TAG_FILTER` environment variable.
 It will enable the system to only keep the tags that contain the string you set.
 
-### Compile from source
-
-```bash
-go build .
-```
 
 ### Running it locally
 
 ```bash
-go run .
+go run ./...
 ```
 
 ### Run it as a Docker container

@@ -18,10 +18,8 @@ RUN mkdir /go/src/build
 RUN go build -a -gcflags=all="-l -B" -ldflags="-w -s" -o build/workspaceone-exporter ./...
 
 # Second stage
-FROM alpine:latest
+FROM alpine:3.17
 
 COPY --from=builder /go/src/build/workspaceone-exporter /usr/local/bin/workspaceone-exporter
-RUN mkdir /var/log/workspaceone-exporter
-RUN chmod 677 /var/log/workspaceone-exporter
 CMD ["/usr/local/bin/workspaceone-exporter"]
 EXPOSE 9740

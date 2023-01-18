@@ -11,14 +11,25 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// TODO: Validate the init() behaviour, not certain that it will does what I want
-// TODO: Use a local DB like badger (maybe something better idk) to temporary store the data
 // TODO: Set some flags so to be able to select if we want values per tags or not as it can consume tons of API calls
 // TODO: Introduce a throttling mechanism to avoid overloading the WS1 API
 // TODO: Create a subprocess for quering getting the devices inventory
 // TODO: Timeout the API call and produce a metric of this
 
 func init() {
+
+	// Test if env variable INSECURE exists
+	// If it does, set the insecureSkipVerify to true
+	// If it does not, set the insecureSkipVerify to false
+	insecure = false
+	if os.Getenv("INSECURE") != "" {
+		if insecureVal, err := strconv.ParseBool(os.Getenv("INSECURE")); err == nil {
+			if insecureVal {
+				insecure = true
+			}
+		}
+	}
+
 	// Set the log output to stdout
 	log.SetOutput(os.Stdout)
 	// Set the log prefix
@@ -32,15 +43,22 @@ func init() {
 	// fmt.Printf("Value of ws1Intervalraw: %q\n", ws1Intervalraw)
 
 	ws1TagParsingRaw = os.Getenv("TAG_PARSING")
-	// fmt.Printf("Type of ws1TagParsingRaw: %T\n", ws1TagParsingRaw)
-	// fmt.Printf("Value of ws1TagParsingRaw: %q\n", ws1TagParsingRaw)$
+	//log.Printf("Type of ws1TagParsingRaw: %T\n", ws1TagParsingRaw)
+	//log.Printf("Value of ws1TagParsingRaw: %q\n", ws1TagParsingRaw)$
 
 	tagFilter = os.Getenv("TAG_FILTER")
 }
 
 func main() {
+	log.Println("Starting WS1 exporter on port 9740")
 
-	recordMetrics()
+	// create a new ServeMux
+	mux := http.NewServeMux()
+
+	if insecure {
+		log.Println("Client insecure: ", insecure)
+		SetInsecureSSL()
+	}
 
 	deviceList := GetVolumeDevices()
 
@@ -87,7 +105,11 @@ func main() {
 
 					// For each tag found,
 					// Set a gauge metric with the tag name and the number of device
-					tagDeviceSum.WithLabelValues(tag.TagName).Set(float64(len(tagDeviceList.Device)))
+					// Do not set if the value is 0
+					if len(tagDeviceList.Device) > 0 {
+						tagDeviceSum.WithLabelValues(tag.TagName).Set(float64(len(tagDeviceList.Device)))
+
+					}
 
 					// For each tag found,
 					// Set a gauge metric with the tag name and the number of devices offlline
@@ -100,7 +122,7 @@ func main() {
 							if d.ID.Value == tagDevice.DeviceID {
 								// convert the lastSeen value in time
 								if lastSeen, err := time.Parse("2006-01-02T15:04:05", d.LastSeen); err != nil {
-									panic("Error converting lastSeen to time")
+									log.Println("Error converting lastSeen to time")
 								} else {
 									// If the lastSeen value - current time is greater than the interval
 									// then the device is offline
@@ -109,7 +131,7 @@ func main() {
 									// fmt.Printf("Type of ws1Intervalraw: %T\n", ws1Intervalraw)
 									// fmt.Printf("Value of ws1Intervalraw: %q\n", ws1Intervalraw)
 									if ws1Interval, err := strconv.Atoi(ws1Intervalraw); err != nil {
-										panic("Error converting WS1_INTERVAL to int")
+										log.Println("Error converting WS1_INTERVAL to int")
 									} else {
 										if time.Since(lastSeen) > time.Duration(ws1Interval)*time.Minute {
 											tagDeviceOffline.WithLabelValues(tag.TagName).Inc()
@@ -127,7 +149,21 @@ func main() {
 		}
 	}
 
-	// Set the http Handler for prometheus
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":9740", nil)
+	// handle GET requests to /metrics
+	mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			promhttp.Handler().ServeHTTP(w, r)
+			return
+		}
+
+		http.Error(w, "Forbidden", http.StatusForbidden)
+	})
+
+	// handle all other requests
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+	})
+
+	// start the HTTP server
+	http.ListenAndServe(":9740", mux)
 }

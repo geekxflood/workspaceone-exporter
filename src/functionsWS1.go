@@ -13,7 +13,7 @@ import (
 // Of all devices in the WS1 tenant
 func Ws1DeviceRetriver() DevicesResponseObject {
 	// fmt.Println("Retrieving Devices")
-	url := os.Getenv("WS1_URL") + "/mdm/devices/search?lgid=" + os.Getenv("WS1_LGID")
+	url := os.Getenv("WS1_URL") + "/API/mdm/devices/search?lgid=" + os.Getenv("WS1_LGID")
 	method := "GET"
 
 	header := map[string]string{
@@ -53,7 +53,7 @@ func Ws1DeviceRetriver() DevicesResponseObject {
 		// redo the API call for each page
 		// Start at 1 because the first page @ 0 is already in the responseObject
 		for i := 1; i < pages; i++ {
-			url := os.Getenv("WS1_URL") + "/mdm/devices/search?lgid=" + os.Getenv("WS1_LGID") + "&page=" + strconv.Itoa(i)
+			url := os.Getenv("WS1_URL") + "/API/mdm/devices/search?lgid=" + os.Getenv("WS1_LGID") + "&page=" + strconv.Itoa(i)
 			resBody, resStatus, err = ApiCaller(url, method, nil, header)
 			//fmt.Println(string(resBody))
 			//fmt.Println(resStatus)
@@ -85,7 +85,7 @@ func Ws1DeviceRetriver() DevicesResponseObject {
 // list of all tags in the WS1 tenant
 func Ws1TagRetriver() TagsResponseObject {
 	// fmt.Println("Retrieving Tags")
-	url := os.Getenv("WS1_URL") + "/mdm/tags/search?organizationgroupid=" + os.Getenv("WS1_LGID")
+	url := os.Getenv("WS1_URL") + "/API/mdm/tags/search?organizationgroupid=" + os.Getenv("WS1_LGID")
 	method := "GET"
 
 	header := map[string]string{
@@ -122,7 +122,7 @@ func Ws1TagDeviceRetriver(tagId int) TagDeviceListObject {
 
 	id := strconv.Itoa(tagId)
 
-	url := os.Getenv("WS1_URL") + "/mdm/tags/" + id + "/devices"
+	url := os.Getenv("WS1_URL") + "/API/mdm/tags/" + id + "/devices"
 	method := "GET"
 
 	header := map[string]string{

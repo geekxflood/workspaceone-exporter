@@ -7,15 +7,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// opsProcessed is a counter which represents the total number of processed events.
-// This counter is incremented each 2 seconds by the recordMetrics function
-var (
-	opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "myapp_processed_ops_total",
-		Help: "The total number of processed events",
-	})
-)
-
 // deviceNumber is a gauge which represents the number of devices in the WS1 tenant
 var (
 	deviceNumber = promauto.NewGauge(prometheus.GaugeOpts{

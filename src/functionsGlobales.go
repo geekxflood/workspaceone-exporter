@@ -3,18 +3,19 @@ package main
 // Library of all the generic functions
 
 import (
+	"crypto/tls"
 	"io"
 	"net/http"
-	"time"
 )
 
-func recordMetrics() {
-	go func() {
-		for {
-			opsProcessed.Inc()
-			time.Sleep(2 * time.Second)
-		}
-	}()
+func SetInsecureSSL() {
+	// Create a new transport
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	// Create a new client
+	http.DefaultClient = &http.Client{Transport: tr}
 }
 
 // function apiCaller will do a REST API Call

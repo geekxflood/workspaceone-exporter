@@ -5,3 +5,4 @@ package main
 var ws1Intervalraw string
 var ws1TagParsingRaw string
 var tagFilter string
+var insecure bool
