@@ -17,6 +17,7 @@ example: `http://localhost:9740/metrics`
 
 | Metric | Description | Labels | Type | Implemented |
 | ------ | ----------- | ------ | ---- | ----------- |
+| `api_calls` | The number of API calls made to the WS1 tenant | `none` | Counter | ✅ |
 | `devices_number` | The number of devices in the WS1 tenant | `none` | Gauge | ✅ |
 | `devices_os` | The number of devices per OS in the WS1 tenant | `os` | Gauge | ✅ |
 | `devices_offline` | The number of devices in the WS1 tenant that are offline | `none` | Gauge | ✅ |

@@ -52,7 +52,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	if insecure {
-		log.Println("Client insecure: ", insecure)
+		log.Println("Client insecure:", insecure)
 		SetInsecureSSL()
 	}
 

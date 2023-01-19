@@ -70,3 +70,11 @@ var (
 		Help: "The number of devices offline per tag in the WS1 tenant for more than the last month",
 	}, []string{"tag", "model"})
 )
+
+// apiCalls is a counter which represents the number of API calls made to the WS1 API
+var (
+	apiCalls = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "api_calls",
+		Help: "The number of API calls made to the WS1 API",
+	})
+)

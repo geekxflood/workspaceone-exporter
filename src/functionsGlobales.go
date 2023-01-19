@@ -23,6 +23,10 @@ func SetInsecureSSL() {
 // the body of the request (if any) and the headers (if any)
 // The function return the response body, the status code and an error
 func ApiCaller(url string, method string, body io.Reader, headers map[string]string) ([]byte, int, error) {
+
+	// increse the number of API calls as we will presume that the API call will be successful
+	apiCalls.Inc()
+
 	// Create a new request
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
