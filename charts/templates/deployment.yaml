@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "charts.fullname" . }}
+  name: {{ include "workspaceone-exporter.fullname" . }}
   labels:
-    {{- include "charts.labels" . | nindent 4 }}
+    {{- include "workspaceone-exporter.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "charts.selectorLabels" . | nindent 6 }}
+      {{- include "workspaceone-exporter.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "charts.selectorLabels" . | nindent 8 }}
+        {{- include "workspaceone-exporter.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "charts.serviceAccountName" . }}
+      serviceAccountName: {{ include "workspaceone-exporter.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -34,22 +34,32 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-          {{- if .Values.envVars }}
-            - name: {{ .name }}
-              value: {{ .value }}
-          {{- end }}
+            - name: WS1_AUTH_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: workspaceone-token-secret
+                  key: ws1UserToken
+            - name: WS1_TENANT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: workspaceone-token-secret
+                  key: ws1ServerToken
+            - name: WS1_URL
+              value: {{ .Values.ws1Url | quote }}
+            - name: WS1_LGID
+              value: {{ .Values.ws1Lgid | quote }}
+            - name: WS1_INTERVAL
+              value: {{ .Values.ws1Interval | quote }}
+            - name: TAG_FILTER
+              value: {{ .Values.ws1TagFilter | quote }}
+            - name: TAG_PARSING
+              value: {{ .Values.ws1TagParsing | quote }}
+            - name: INSECURE
+              value: {{ .Values.ws1Insecure | quote }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
