@@ -6,6 +6,12 @@ WorkspaceOne UEM Prometheus exporter
 
 This exporter is used to export WorkspaceOne UEM value to [OpenMetrics](https://openmetrics.io/) format.
 
+## TODO
+
+- [ ] Correct api_calls metrics as it doesn't count the total amount of API calls but only one made by one Prometheus scrape
+- [ ] Validate the TAG_FILTER parsing when an empty parse filter is given
+- [ ] Add more metrics (need suggestions)
+
 ## Accessing the metrics
 
 - Default port: 9740
@@ -54,7 +60,6 @@ graph RL
 
 You can filter the devices by tag by using the `TAG_FILTER` environment variable.
 It will enable the system to only keep the tags that contain the string you set.
-
 
 ### Running it locally
 
