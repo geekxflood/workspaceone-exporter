@@ -11,11 +11,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-// TODO: Set some flags so to be able to select if we want values per tags or not as it can consume tons of API calls
-// TODO: Introduce a throttling mechanism to avoid overloading the WS1 API
-// TODO: Create a subprocess for quering getting the devices inventory
-// TODO: Timeout the API call and produce a metric of this
-
 func init() {
 
 	// Test if env variable INSECURE exists

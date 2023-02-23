@@ -10,7 +10,11 @@ This exporter is used to export WorkspaceOne UEM value to [OpenMetrics](https://
 
 - [ ] Correct api_calls metrics as it doesn't count the total amount of API calls but only one made by one Prometheus scrape
 - [ ] Validate the TAG_FILTER parsing when an empty parse filter is given
-- [ ] Add more metrics (need suggestions)
+- [ ] Set some flags to be able to select if we want values per tag or not as it can consume tons of API calls
+- [ ] Introduce a throttling mechanism to avoid overloading the WS1 API
+- [ ] Create a subprocess for querying getting the device's inventory
+- [ ] Timeout the API call and produce a metric of this
+- [ ] Add more metrics (open to suggestions)
 
 ## Accessing the metrics
 
