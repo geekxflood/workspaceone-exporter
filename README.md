@@ -74,9 +74,11 @@ go run ./...
 ### Run it as a Docker container
 
 ```bash
-docker build -t w1-prometheus-exporter .
-docker run -d -p 9740:9740 w1-prometheus-exporter
+docker build -t workspaceone-prometheus-exporter .
+docker run -d -p 9740:9740 workspaceone-prometheus-exporter
 ```
+
+![Made with VHS](https://vhs.charm.sh/vhs-6Pw9hpjy1R6vGpvXpP5cAB.gif)
 
 ## Useful links
 

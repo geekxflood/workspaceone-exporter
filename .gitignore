@@ -7,3 +7,5 @@
 *.so
 *.test
 build/
+output/
+binary/
