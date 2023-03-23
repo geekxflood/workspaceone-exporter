@@ -14,7 +14,7 @@ ws1TagParsing: ""
 ws1Insecure: ""
 
 image:
-  repository: "ghcr.io/christopherime/workspaceone-exporter"
+  repository: "ghcr.io/geekxflood/workspaceone-exporter"
   pullPolicy: IfNotPresent
   tag: "latest"
 
