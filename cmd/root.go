@@ -6,7 +6,9 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/geekxflood/workspaceone-exporter/internal/api"
 	"github.com/geekxflood/workspaceone-exporter/internal/httpclient"
+	"github.com/geekxflood/workspaceone-exporter/internal/metrics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 )
@@ -14,7 +16,7 @@ import (
 var (
 	port        string
 	insecure    bool
-	defaultLgid int
+	defaultLgid string
 	ws1URL      string
 	ws1Interval string
 	tagParsing  bool
@@ -37,7 +39,7 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&port, "port", "p", "9100", "Port to run the HTTP server on")
 	rootCmd.PersistentFlags().BoolVarP(&insecure, "insecure", "i", false, "Ignore TLS for self-signed certificates")
-	rootCmd.PersistentFlags().IntVarP(&defaultLgid, "default-lgid", "d", 0, "Default LGID value to use if not provided in query")
+	rootCmd.PersistentFlags().StringVar(&defaultLgid, "default-lgid", "d", "Default LGID value to use if not provided in query")
 	rootCmd.PersistentFlags().StringVar(&ws1URL, "ws1-url", "", "WorkspaceOne UEM base API URL endpoint")
 	rootCmd.PersistentFlags().StringVar(&ws1Interval, "ws1-interval", "60", "Interval between each WS1 check to its enrolled devices in minutes")
 	rootCmd.PersistentFlags().BoolVar(&tagParsing, "tag-parsing", false, "Enable or disable the tag parsing")
@@ -59,22 +61,26 @@ func runServer(cmd *cobra.Command, args []string) {
 }
 
 func metricsHandler(w http.ResponseWriter, r *http.Request, client *http.Client) {
-	queryParams := r.URL.Query()
-	lgidParam := queryParams.Get("lgid")
+	var err error
 
-	lgid := defaultLgid
-	if lgidParam != "" {
-		var err error
-		lgid, err = strconv.Atoi(lgidParam)
+	queryParams := r.URL.Query()
+
+	if ws1Lgid := queryParams.Get("ws1-lgid"); ws1Lgid != "" {
+		_, err := strconv.Atoi(ws1Lgid)
 		if err != nil {
-			log.Printf("Invalid lgid query parameter: %v", err)
-			http.Error(w, "Invalid lgid parameter", http.StatusBadRequest)
+			log.Printf("Invalid ws1-lgid query parameter: %v", err)
+			http.Error(w, "Invalid ws1-lgid parameter", http.StatusBadRequest)
 			return
 		}
+		defaultLgid = ws1Lgid
 	}
 
 	if intervalParam := queryParams.Get("ws1-interval"); intervalParam != "" {
 		ws1Interval = intervalParam
+		if ws1Interval == "" {
+			log.Println("WS1 Interval is empty, fallback to 30m")
+			ws1Interval = "30"
+		}
 	}
 
 	if urlParam := queryParams.Get("ws1-url"); urlParam != "" {
@@ -83,7 +89,6 @@ func metricsHandler(w http.ResponseWriter, r *http.Request, client *http.Client)
 			http.Error(w, "Invalid ws1-url parameter", http.StatusBadRequest)
 			return
 		}
-		ws1URL = urlParam
 	}
 
 	if parsingParam := queryParams.Get("tag-parsing"); parsingParam != "" {
@@ -97,8 +102,15 @@ func metricsHandler(w http.ResponseWriter, r *http.Request, client *http.Client)
 		tagFilter = filterParam
 	}
 
-	// Here, add logic to use ws1URL, ws1Interval, tagParsing, and tagFilter
-	// to fetch and update metrics
+	// Fetch device list
+	deviceList, err := api.FetchDevices(client, defaultLgid)
+	if err != nil {
+		log.Printf("Error fetching devices: %v", err)
+		http.Error(w, "Error fetching devices", http.StatusInternalServerError)
+		return
+	}
+
+	metrics.DeviceNumber.Set(float64(len(deviceList.Devices)))
 
 	// Serve the metrics
 	promhttp.Handler().ServeHTTP(w, r)
