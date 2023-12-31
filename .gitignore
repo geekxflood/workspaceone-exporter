@@ -1,11 +1,62 @@
-.env
-*.dll
-*.exe
-*.exe~
-*.dylib
-*.out
+# Compiled binary and object files
+*.o
+*.a
 *.so
+*.exe
 *.test
-build/
-output/
-binary/
+*.out
+/bin/
+/pkg/
+
+# Dependency directories (remove the "/" at the end to ignore the directory itself)
+/vendor/
+/node_modules/
+
+# Editor and IDE files
+*.swp
+*.swo
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+*.vs/
+*.sublime-workspace
+*.sublime-project
+
+# Operating System generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Test files
+/coverage.out
+
+# Configuration files that may contain sensitive information
+.env
+*.env
+*.yaml
+
+# Docker generated files
+docker-compose*.yml
+docker-compose*.yaml
+*.dockerenv
+*.dockerignore
+docker/
+**/docker-compose*.override.yml
+
+# Helm chart packages
+*.tgz
+
+# Other files and directories to exclude
+/tmp/
+/temp/
