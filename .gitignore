@@ -46,14 +46,6 @@ Thumbs.db
 *.env
 *.yaml
 
-# Docker generated files
-docker-compose*.yml
-docker-compose*.yaml
-*.dockerenv
-*.dockerignore
-docker/
-**/docker-compose*.override.yml
-
 # Helm chart packages
 *.tgz
 
